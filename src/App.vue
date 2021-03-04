@@ -24,7 +24,7 @@ export default {
   >
     <!-- The contents of the #title template slot will be displayed in the upper left corner of the experiment -->
     <template #title>
-      <div>InteractiveExperiment</div>
+      <div>Interactive experiment</div>
     </template>
 
     <!-- The contents of the #screens template slot define your experiment -->
@@ -83,7 +83,7 @@ export default {
         <AltTable :content="trial.content[parseInt($magpie.socket.chain)]"></AltTable>
         <p>{{ trial.conditions[ (parseInt($magpie.socket.variant) - 1)] }}</p>
         <AltChat></AltChat>
-        <button @click="$magpie.nextScreen(); submit_chat()">Next</button>
+        <button @click="$magpie.nextScreen(); submit_chat()">Leave Chat</button>
       </Screen>
 
       <Screen :title="'Posttest'">
@@ -161,8 +161,8 @@ function generateData(head, rows, vmin, vmax) {
   return {head:head, data:data}
 }
 
-var HEADS = ["Name", "Fouls", "Fouls received", "Penalties", "Penalties received", "Players wounded", "Wounded Players", "Referee attacks", "Killed referees", "People died during aftermatch parties"];
-var ROWS = ["Exampleton FC", "Grashoppers Zürich", "FC Columbus", "RM Anova"];
+var HEADS = ["Name", "Fouls caused", "Fouls received", "Injuries caused", "Injuries received", "Referees attacked", "starred Nutella commercials", "People died during aftermatch parties"];
+var ROWS = ["Exampleton FC", "Grasshoppers Zürich", "FC Columbus", "RM Anova"];
 var CONTENT = [generateData(["Name", "Fouls", "Trick shots", "Spit at people"], ["Exampleton FC", "Ludovigos United", "Killer Club"]),
   generateData(HEADS, ROWS),
   generateData(HEADS, ROWS),
@@ -183,7 +183,6 @@ var CONTENT = [generateData(["Name", "Fouls", "Trick shots", "Spit at people"], 
   generateData(HEADS, ROWS)];
 
 console.log(CONTENT);
-const EVENT_TRIALGEN = null;
 
 export default {
   name: "InteractiveExperiment",
@@ -192,36 +191,14 @@ export default {
     AltTable
   },
   data() {
-    /*const trial = {
+    const trial = {
       conditions:["Convince your chat partner that Exampleton FC played unfair.",
         "Convince your chat partner that Exampleton FC played fair."],
       content: CONTENT
-    };*/
-    const trial = {
-      conditions: 1,
-      content: 1
     };
     return {
       trial
     };
-  },
-  socket: {
-    [EVENT_TRIALGEN](payload) {
-      this.trial = payload;
-      this.$emit('update:trial', this.trial);
-    }
-  },
-  EVENT_TRIALGEN,
-  mounted() {
-    if (this.$magpie.socket.variant === 1) {
-      this.$magpie.socket.broadcast(EVENT_TRIALGEN, {
-        condition: Math.round(Math.random()),
-        content: generateData(HEADS, ROWS)
-      })
-    }
-    this.trial = this.$magpie.socket.EVENT_TRIALGEN;
-    console.log("ATTTENTION");
-    console.log(this.trial);
   },
   methods: {
     submit_chat() {

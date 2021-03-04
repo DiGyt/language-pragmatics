@@ -38,8 +38,7 @@ export default {
     return {
       messages: [],
       statusMonitor: {},
-      active: "Your chat partner has not yet entered the chat.",
-      update: null
+      active: "Your chat partner has not yet entered the chat."
     };
   },
   socket: {
@@ -61,7 +60,6 @@ export default {
     this.monitorActivity()
   },
   deactivated() {
-    this.$magpie.addResult({ question: "Chat msgs", answer: this.messages});
     clearInterval(this.update);
   },
   methods: {
@@ -90,8 +88,9 @@ export default {
           console.log(this.statusMonitor)
           if (participantID != this.$magpie.socket.participantId) {
             if (status.status === "active") {
-              if ((new Date() - new Date(status.lastUpdated)) > 10 * 1000) {
-                this.active = "Your chat partner has left the chat. Please click `leave chat` to finish the experiment.";
+              if ((new Date() - new Date(status.lastUpdated)) > 15 * 1000) {
+                // If there's no response after 30 seconds, partner has left the chat
+                this.active = "Your chat partner has left the chat. Please click [leave chat] to finish the experiment.";
               } else {
                 this.active = "Your chat partner is active";
               }
@@ -104,6 +103,8 @@ export default {
   }
 };
 </script>
+
+
 <style>
 .chat {
   width: 450px;
