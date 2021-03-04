@@ -39,7 +39,6 @@ export default {
       messages: [],
       statusMonitor: {},
       active: "Your chat partner has not yet entered the chat.",
-      update: null
     };
   },
   socket: {
@@ -83,20 +82,24 @@ export default {
         this.$magpie.socket.broadcast(EVENT_CHAT_ACTIVE, {
           status: "active",
           participantId: this.$magpie.socket.participantId,
+          chain: this.$magpie.socket.chain,
           lastUpdated: new Date()
         });
         // check if partner is active
         for (let [participantID, status] of Object.entries(this.statusMonitor)) {
           console.log(this.statusMonitor)
-          if (participantID != this.$magpie.socket.participantId) {
-            if (status.status === "active") {
-              if ((new Date() - new Date(status.lastUpdated)) > 10 * 1000) {
-                this.active = "Your chat partner has left the chat. Please click `leave chat` to finish the experiment.";
-              } else {
-                this.active = "Your chat partner is active";
+          if (status.chain === this.$magpie.socket.chain) {
+            if (participantID != this.$magpie.socket.participantId) {
+              if (status.status === "active") {
+                if ((new Date() - new Date(status.lastUpdated)) > 10 * 1000) {
+                  this.active = "Your chat partner has left the chat. Please click `leave chat` to finish the experiment.";
+                } else {
+                  this.active = "Your chat partner is active";
+                }
               }
             }
           }
+
           console.log(this.active);
         }
       }, 3000)
