@@ -227,8 +227,8 @@ export default {
       var partner_left = notice === "Your chat partner has left the chat. Please click [leave chat] to finish the experiment.";
       var time_passed = (new Date() - new Date(this.chatTimer)) > (1000 * 60 * 1); // TODO: set the timer to 15 minutes
       if (partner_left || time_passed) {
-        this.$magpie.nextScreen();
         this.submitChat();
+        this.$magpie.nextScreen();
       } else {
         alert("Please discuss with your partner for at least 15 minutes before leaving.");
       }
