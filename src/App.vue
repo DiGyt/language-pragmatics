@@ -19,7 +19,7 @@ export default {
       sliderRating
     }"-->
   <Experiment
-      id="test1234"
+      id="174-language-pragmatics"
 
   >
     <!-- The contents of the #title template slot will be displayed in the upper left corner of the experiment -->
@@ -73,7 +73,15 @@ export default {
               initial="50"
               :response.sync="responses.slider"
           />
-          <button @click="$magpie.addResult({question: 'pre', answer:  responses.slider}); $magpie.nextScreen(); setChatTimer();">Continue</button>
+          <button
+              @click="
+              $magpie.addResult({question: 'pre', answer:  responses.slider});
+              $magpie.nextScreen();
+              setChatTimer();
+          "
+          >
+            Continue
+          </button>
         </template>
       </Screen>
 
@@ -100,8 +108,8 @@ export default {
         </template>
       </Screen>
 
-      <DebugResults />
-      <!--  <SubmitResults />  -->
+      <!--  <DebugResults />  -->
+      <SubmitResults />
 
       <!-- While developing your experiment, using the DebugResults screen is fine,
       once you're going live, you can use the <SubmitResults> screen to automatically send your experimental data to the server. -->
@@ -207,8 +215,6 @@ export default {
       var container = [];
       for(var i=0; i<document.getElementById('chatbox_1').children.length; i++){
         var msg = document.getElementById('chatbox_1').children[i];
-        console.log("CHAAT", msg);
-        console.log("CLASS", msg.className === "message me");
         var author = (msg.className === "message me") ?  "me" : "partner";
         var msg_text = msg.textContent;
         container.push([author, msg_text]);
