@@ -12,7 +12,7 @@
           v-text="message.message"
       ></p>
     </div>
-    <div class="notice-box">{{active}}</div>
+    <div id="noticebox_1" class="notice-box">{{active}}</div>
     <div class="chat-input">
       <textarea
           ref="text"
@@ -90,6 +90,7 @@ export default {
           if (status.chain === this.$magpie.socket.chain) {
             if (participantID != this.$magpie.socket.participantId) {
               if (status.status === "active") {
+                // TODO: maybe set the partner timeout to 30 seconds? 10 look good though...
                 if ((new Date() - new Date(status.lastUpdated)) > 10 * 1000) {
                   this.active = "Your chat partner has left the chat. Please click [leave chat] to finish the experiment.";
                 } else {
@@ -101,7 +102,7 @@ export default {
 
           console.log(this.active);
         }
-      }, 3000)
+      }, 2000)
     }
   }
 };

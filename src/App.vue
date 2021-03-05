@@ -59,7 +59,7 @@ export default {
             $magpie.addResult({ question: 'condition', answer: (parseInt($magpie.socket.variant) - 1)});
           "
         >
-          to the practice trial
+          Continue
         </button>
       </Screen>
 
@@ -73,7 +73,7 @@ export default {
               initial="50"
               :response.sync="responses.slider"
           />
-          <button @click="$magpie.addResult({question: 'pre', answer:  responses.slider}); $magpie.nextScreen();">Continue</button>
+          <button @click="$magpie.addResult({question: 'pre', answer:  responses.slider}); $magpie.nextScreen(); setChatTimer();">Continue</button>
         </template>
       </Screen>
 
@@ -83,7 +83,7 @@ export default {
         <AltTable :content="trial.content[parseInt($magpie.socket.chain)]"></AltTable>
         <p>{{ trial.conditions[ (parseInt($magpie.socket.variant) - 1)] }}</p>
         <AltChat></AltChat>
-        <button @click="$magpie.nextScreen(); submit_chat()">Leave Chat</button>
+        <button @click="leaveChat(); submitChat()">Leave Chat</button>
       </Screen>
 
       <Screen :title="'Posttest'">
@@ -100,8 +100,8 @@ export default {
         </template>
       </Screen>
 
-      <!--  <DebugResults />  -->
-      <SubmitResults />
+      <DebugResults />
+      <!--  <SubmitResults />  -->
 
       <!-- While developing your experiment, using the DebugResults screen is fine,
       once you're going live, you can use the <SubmitResults> screen to automatically send your experimental data to the server. -->
@@ -195,22 +195,39 @@ export default {
     const trial = {
       conditions:["Convince your chat partner that Exampleton FC played unfair.",
         "Convince your chat partner that Exampleton FC played fair."],
-      content: CONTENT
+      content: CONTENT,
+      chatTimer: null
     };
     return {
       trial
     };
   },
   methods: {
-    submit_chat() {
+    submitChat() {
       var container = [];
       for(var i=0; i<document.getElementById('chatbox_1').children.length; i++){
         var msg = document.getElementById('chatbox_1').children[i];
+        console.log("CHAAT", msg);
+        console.log("CLASS", msg.className === "message me");
+        var author = (msg.className === "message me") ?  "me" : "partner";
         var msg_text = msg.textContent;
-        container.push(msg_text);
+        container.push([author, msg_text]);
       }
       this.$magpie.addResult({ question: "Chat messages", answer: container});
       console.log(this.$magpie.socket);
+    },
+    leaveChat() {
+      var notice = document.getElementById('noticebox_1').firstChild.textContent;
+      var partner_left = notice === "Your chat partner has left the chat. Please click [leave chat] to finish the experiment.";
+      var time_passed = (new Date() - new Date(this.chatTimer)) > (1000 * 60 * 1); // TODO: set the timer to 15 minutes
+      if (partner_left || time_passed) {
+        this.$magpie.nextScreen();
+      } else {
+        alert("Please discuss with your partner for at least 15 minutes before leaving.");
+      }
+    },
+    setChatTimer() {
+      this.chatTimer = new Date();
     }
   }
 }
