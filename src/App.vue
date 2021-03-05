@@ -91,7 +91,7 @@ export default {
         <AltTable :content="trial.content[parseInt($magpie.socket.chain)]"></AltTable>
         <p>{{ trial.conditions[ (parseInt($magpie.socket.variant) - 1)] }}</p>
         <AltChat></AltChat>
-        <button @click="leaveChat(); submitChat()">Leave Chat</button>
+        <button @click="leaveChat();">Leave Chat</button>
       </Screen>
 
       <Screen :title="'Posttest'">
@@ -228,6 +228,7 @@ export default {
       var time_passed = (new Date() - new Date(this.chatTimer)) > (1000 * 60 * 1); // TODO: set the timer to 15 minutes
       if (partner_left || time_passed) {
         this.$magpie.nextScreen();
+        this.submitChat();
       } else {
         alert("Please discuss with your partner for at least 15 minutes before leaving.");
       }
