@@ -172,7 +172,7 @@ function generateData(head, rows, vmin, vmax) {
 
 var HEADS = ["Name", "Fouls caused", "Fouls received", "Injuries caused", "Injuries received", "Referees attacked", "starred Nutella commercials", "People died during aftermatch parties"];
 var ROWS = ["Exampleton FC", "Grasshoppers Zürich", "FC Columbus", "RM Anova"];
-var CONTENT = [generateData(["Name", "Fouls", "Trick shots", "Spit at people"], ["Exampleton FC", "Ludovigos United", "Killer Club"]),
+var CONTENT = [generateData(["Name", "Fouls", "Red Cards", "Spit at people"], ["Exampleton FC", "VFL Osnabrück", "TSG Hoffenham Hotspurs"]),
   generateData(HEADS, ROWS),
   generateData(HEADS, ROWS),
   generateData(HEADS, ROWS),
