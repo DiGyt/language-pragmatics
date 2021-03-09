@@ -11,20 +11,15 @@ export default {
   <!--
   Set your experiment id here and
   Define your data sources with the trials attribute
-  :trials="{
-      forced_choice,
-      multi_dropdown,
-      sentenceChoice,
-      imageSelection,
-      sliderRating
-    }"-->
+  -->
   <Experiment
+      title = "Language Pragmatics Chat Experiment"
       id="174-language-pragmatics"
 
   >
     <!-- The contents of the #title template slot will be displayed in the upper left corner of the experiment -->
     <template #title>
-      <div>Interactive experiment</div>
+      <div>Interactive chat experiment</div>
     </template>
 
     <!-- The contents of the #screens template slot define your experiment -->
@@ -43,16 +38,22 @@ export default {
       </Screen>
 
       <Screen :title="'General Instructions'">
-        In this experiment, you will be able to have a real-time discussion with a chat partner.
-        Your discussion will be about the behavior of a soccer club (Exampleton FC) during the last season.
-        In the table below you can see descriptive statistics on the fairness behavior of multiple soccer clubs during
-        the last season. During your discussion with your chat partner you will be able to inspect such a table, and
-        use its information as a basis for your arguments.
+        In this experiment, you will evaluate the fairness of a soccer club (Exampleton FC) during the last season.
+        In the table below you can see summary statistics of different fairness-related events counted for multiple
+        soccer clubs during the last season.
         <br />
         <br />
-        <AltTable :content="trial.content[0]"></AltTable>
+        <AltTable :content="train.content"></AltTable>
         <br />
-        Note that you can sort the table in descending or ascending order by clicking on the names in the head row.
+        Note that you can sort the table in descending or ascending order by clicking on the descriptions in the
+        head row.
+        <br />
+        <br />
+        Your task will be to discuss the topic with a human chat partner, arguing either for or against Exampleton
+        FC. During the discussion with your chat partner you will be able to inspect a table similar to the one
+        above, and use its information as a basis for your arguments.
+        <br />
+        Before and after the Chat, you will be asked to rate Exampleton FC's fairness based on the summary statistics.
         <button
             @click="
             $magpie.nextScreen();
@@ -63,7 +64,7 @@ export default {
         </button>
       </Screen>
 
-      <Screen :title="'Pretest'">
+      <Screen :title="'Your Opinion'">
         <template #0="{responses}">
           <AltTable :content="trial.content[parseInt($magpie.socket.chain)]"></AltTable>
           <p>How fair did Exampleton FC play during the last season?</p>
@@ -94,7 +95,7 @@ export default {
         <button @click="leaveChat();">Leave Chat</button>
       </Screen>
 
-      <Screen :title="'Posttest'">
+      <Screen :title="'Your Opinion'">
         <template #0="{responses}">
           <AltTable :content="trial.content[parseInt($magpie.socket.chain)]"></AltTable>
           <p>How fair did Exampleton FC play during the last season?</p>
@@ -108,7 +109,71 @@ export default {
         </template>
       </Screen>
 
-      <!--  <DebugResults />  -->
+      <Screen key="additional-information" title="Additional information">
+        <template #0="{ responses }">
+          <p>
+            Answering the following questions is optional, but your answers will
+            help us analyze our results.
+          </p>
+          <div style="text-align: left; width: 200px; margin: 0 auto">
+            <p>
+              <label
+              >Age
+                <input v-model="responses.age" type="number" max="110" min="18"
+                /></label>
+            </p>
+            <p>
+              <label
+              >Gender
+                <select v-model="responses.gender">
+                  <option value="male">male</option>
+                  <option value="female">female</option>
+                  <option value="other">other</option>
+                </select></label
+              >
+            </p>
+            <p>
+              <label
+              >Level of Eduction
+                <select v-model="responses.education">
+                  <option value="Graduated Highschool">
+                    Graduated Highschool
+                  </option>
+                  <option value="Graduated College">Graduated College</option>
+                  <option value="Higher degree">Higher degree</option>
+                </select></label
+              >
+            </p>
+            <p>
+              <label
+              >Native languages
+                <input
+                    v-model="responses.languages"
+                    type="text"
+                    placeholder="langauge(s) spoken at home when you were a child"
+                    style="width: 400px"
+                /></label>
+            </p>
+            Further comments
+            <TextareaInput :response.sync="responses.comments"></TextareaInput>
+          </div>
+
+          <button
+              @click="
+              $magpie.addResult({question: 'age', answer:  responses.age});
+              $magpie.addResult({question: 'gender', answer:  responses.gender});
+              $magpie.addResult({question: 'education',answer: responses.education});
+              $magpie.addResult({question: 'languages',answer: responses.languages});
+              $magpie.addResult({question: 'comments',answer: responses.comments});
+              $magpie.nextScreen();
+            "
+          >
+            Next
+          </button>
+        </template>
+      </Screen>
+
+      <!--  <DebugResults /> -->
       <SubmitResults />
 
       <!-- While developing your experiment, using the DebugResults screen is fine,
@@ -170,9 +235,10 @@ function generateData(head, rows, vmin, vmax) {
   return {head:head, data:data}
 }
 
-var HEADS = ["Name", "Fouls caused", "Fouls received", "Injuries caused", "Injuries received", "Referees attacked", "starred Nutella commercials", "People died during aftermatch parties"];
-var ROWS = ["Exampleton FC", "Grasshoppers Zürich", "FC Columbus", "RM Anova"];
-var CONTENT = [generateData(["Name", "Fouls", "Red Cards", "Spit at people"], ["Exampleton FC", "VFL Osnabrück", "TSG Hoffenham Hotspurs"]),
+var INTROTABLE = generateData(["Name", "Fouls", "Red Cards", "Spit at people"], ["Exampleton FC", "VFL Osnabrück", "Hoffenham Hotspur"]);
+var HEADS = ["Name", "Fouls caused", "Red Cards", "Injuries caused", "Injuries suffered", "Referees attacked", "starred Nutella commercials", "People died during aftermatch parties"];
+var ROWS = ["Exampleton FC", "Grasshoppers Zürich", "FC Kafd", "RM Anova"];
+var CONTENT = [generateData(HEADS, ROWS),
   generateData(HEADS, ROWS),
   generateData(HEADS, ROWS),
   generateData(HEADS, ROWS),
@@ -200,14 +266,16 @@ export default {
     AltTable
   },
   data() {
+    const train = {content: INTROTABLE};
     const trial = {
       conditions:["Convince your chat partner that Exampleton FC played unfair.",
         "Convince your chat partner that Exampleton FC played fair."],
-      content: CONTENT,
-      chatTimer: null
+      content: CONTENT
     };
     return {
-      trial
+      train,
+      trial,
+      chatTimer: null
     };
   },
   methods: {
