@@ -3,7 +3,7 @@
   <div class="AltChat">
     <div id="chatbox_1" ref="box" class="chat-box">
       <p id="prg"
-          v-for="(message, i) in messages"
+          v-for="(message, i) in messages[instance]"
           :key="i"
           :class="{
           message: true,
@@ -21,7 +21,7 @@
           @keydown.enter="send"
       ></textarea>
       <button @click.stop="send()" @v>
-        Send
+        Sendd
       </button>
     </div>
   </div>
@@ -36,18 +36,21 @@ export default {
   name: 'AltChat',
   data() {
     return {
-      messages: [],
+      messages: {},
       statusMonitor: {},
-      active: "Your chat partner has not yet entered the chat.",
+      active: "Your chat partner has not yet entered the chat."
     };
   },
+  props: ['instance'],
   socket: {
     [EVENT_CHAT_MESSAGE](payload) {
-      this.messages.push(payload);
+      console.log("PUSHED MESSGES ", this.messages);
+      this.messages[payload.instance].push(payload);
       Vue.nextTick(() => {
         this.$refs.box.scrollTop = this.$refs.box.scrollHeight;
       });
       this.$emit('update:messages', this.messages);
+      this.$forceUpdate();
     },
     [EVENT_CHAT_ACTIVE](payload) {
       this.statusMonitor[payload.participantId] = payload;
@@ -57,10 +60,13 @@ export default {
   EVENT_CHAT_MESSAGE,
   EVENT_CHAT_ACTIVE,
   created () {
+    console.log("INST AT CREATION ", this.instance);
+    this.messages[this.instance] = [];
     this.monitorActivity()
   },
   beforeDestroy() {
     clearInterval(this.update);
+    this.statusMonitor = {};
   },
   methods: {
     send() {
@@ -70,7 +76,8 @@ export default {
       }
       this.$magpie.socket.broadcast(EVENT_CHAT_MESSAGE, {
         message,
-        participantId: this.$magpie.socket.participantId
+        participantId: this.$magpie.socket.participantId,
+        instance: this.instance
       });
       this.$refs.text.value = '';
       this.$refs.text.focus();
@@ -79,20 +86,21 @@ export default {
       this.update = setInterval(() => {
         // set yourself active
         this.$magpie.socket.broadcast(EVENT_CHAT_ACTIVE, {
-          status: "active",
+          status: this.instance,
           participantId: this.$magpie.socket.participantId,
           chain: this.$magpie.socket.chain,
           lastUpdated: new Date()
         });
+        console.log("INSTANCE: ", this.instance)
         // check if partner is active
         for (let [participantID, status] of Object.entries(this.statusMonitor)) {
           console.log(this.statusMonitor)
           if (status.chain === this.$magpie.socket.chain) {
             if (participantID != this.$magpie.socket.participantId) {
-              if (status.status === "active") {
+              if (status.status === this.instance) {
                 // TODO: maybe set the partner timeout to 30 seconds? 10 look good though...
                 if ((new Date() - new Date(status.lastUpdated)) > 10 * 1000) {
-                  this.active = "Your chat partner has left the chat. Please click [leave chat] to finish the experiment.";
+                  this.active = "Your chat partner has left the chat. Please click [leave chat] to continue with the experiment.";
                 } else {
                   this.active = "Your chat partner is active";
                 }

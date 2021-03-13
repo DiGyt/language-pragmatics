@@ -58,10 +58,19 @@ export default {
             @click="
             $magpie.nextScreen();
             $magpie.addResult({ question: 'condition', answer: (parseInt($magpie.socket.variant) - 1)});
+            setChatTimer();
           "
         >
           Continue
         </button>
+      </Screen>
+
+      <ConnectInteractive />
+
+      <Screen :title="'Chatting'">
+        <p>Get to know your chat partner.</p>
+        <AltChat :instance="'first'"></AltChat>
+        <button @click="leaveChat(0.5, 'Informal Chat');">Leave Chat</button>
       </Screen>
 
       <Screen :title="'Your Opinion'">
@@ -86,13 +95,11 @@ export default {
         </template>
       </Screen>
 
-      <ConnectInteractive />
-
-      <Screen>
+      <Screen :title="'Discussion'">
         <AltTable :content="trial.content[parseInt($magpie.socket.chain)]"></AltTable>
         <p>{{ trial.conditions[ (parseInt($magpie.socket.variant) - 1)] }}</p>
-        <AltChat></AltChat>
-        <button @click="leaveChat();">Leave Chat</button>
+        <AltChat :instance="'second'"></AltChat>
+        <button @click="leaveChat(1, 'Trial Chat');">Leave Chat</button>
       </Screen>
 
       <Screen :title="'Your Opinion'">
@@ -173,8 +180,8 @@ export default {
         </template>
       </Screen>
 
-      <!--  <DebugResults /> -->
-      <SubmitResults />
+      <DebugResults />
+      <!--  <SubmitResults /> -->
 
       <!-- While developing your experiment, using the DebugResults screen is fine,
       once you're going live, you can use the <SubmitResults> screen to automatically send your experimental data to the server. -->
@@ -220,7 +227,6 @@ RandomInt.prototype.nextFloat = function () {
 var rng = new RandomInt(SEED);
 
 // generate the data
-
 function generateData(head, rows, vmin, vmax) {
   vmin = (typeof vmin !== 'undefined') ?  vmin : 0;
   vmax = (typeof vmax !== 'undefined') ?  vmax : 20;
@@ -279,7 +285,7 @@ export default {
     };
   },
   methods: {
-    submitChat() {
+    submitChat(result_name) {
       var container = [];
       for(var i=0; i<document.getElementById('chatbox_1').children.length; i++){
         var msg = document.getElementById('chatbox_1').children[i];
@@ -287,18 +293,19 @@ export default {
         var msg_text = msg.textContent;
         container.push([author, msg_text]);
       }
-      this.$magpie.addResult({ question: "Chat messages", answer: container});
+      this.$magpie.addResult({ question: result_name, answer: container});
       console.log(this.$magpie.socket);
     },
-    leaveChat() {
+    leaveChat(min_time, result_name) {
       var notice = document.getElementById('noticebox_1').firstChild.textContent;
-      var partner_left = notice === "Your chat partner has left the chat. Please click [leave chat] to finish the experiment.";
-      var time_passed = (new Date() - new Date(this.chatTimer)) > (1000 * 60 * 1); // TODO: set the timer to 15 minutes
+      var partner_left = notice === "Your chat partner has left the chat. Please click [leave chat] to continue with the experiment.";
+      var time_passed = (new Date() - new Date(this.chatTimer)) > (1000 * 60 * min_time); // TODO: set the timer to 15 minutes
       if (partner_left || time_passed) {
-        this.submitChat();
+        this.submitChat(result_name);
+        this.chatTimer = null;
         this.$magpie.nextScreen();
       } else {
-        alert("Please discuss with your partner for at least 15 minutes before leaving.");
+        alert("Please chat with your partner for at least " + min_time.toString() + " minutes before continuing.");
       }
     },
     setChatTimer() {
