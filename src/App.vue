@@ -25,22 +25,17 @@ export default {
     <!-- The contents of the #screens template slot define your experiment -->
     <template #screens>
       <Screen :title="'Welcome'">
-        Welcome to our experiment.
+        Thanks for participating in this experiment our experiment.
+        <br />
+        This experiment will take about 15 minutes.
         <br />
         <br />
-        We are so happy you joined.
-        <br />
-        <br />
-        Usually, nobody ever plays with us. But now you are here.
-        <br />
-        Yay! We will have so much fun together :)))
-        <button @click="$magpie.nextScreen();">Begin the experiment</button>
+        <button @click="$magpie.nextScreen();">start the experiment</button>
       </Screen>
 
-      <Screen :title="'General Instructions'">
-        In this experiment, you will evaluate the fairness of a soccer club (Exampleton FC) during the last season.
-        In the table below you can see summary statistics of different fairness-related events counted for multiple
-        soccer clubs during the last season.
+      <Screen :title="'Instructions'">
+        In this experiment, you will evaluate the fairness of a fictional soccer club (Exampleton FC) during the last season.
+        In the table below you can see different fairness-related events counted for various football clubs over the last season.
         <br />
         <br />
         <AltTable :content="train.content"></AltTable>
@@ -51,13 +46,17 @@ export default {
         <br />
         Your task will be to discuss the topic with a human chat partner, arguing either for or against Exampleton
         FC. During the discussion with your chat partner you will be able to inspect a table similar to the one
-        above, and use its information as a basis for your arguments.
+        above, and use its information as a basis for your arguments. Please write full sentences to make your arguments
+        in the discussion.
+        Before and after the discussion, you will be asked to rate Exampleton FC's fairness based on their scores in the table.
         <br />
-        Before and after the Chat, you will be asked to rate Exampleton FC's fairness based on the summary statistics.
+        <br />
+        Before starting the actual experiment, you will have the opportunity to freely chat with your chat partner.
+        Press [Continue] to match up with a chat partner.
+        <br />
         <button
             @click="
             $magpie.nextScreen();
-            $magpie.addResult({ question: 'condition', answer: (parseInt($magpie.socket.variant) - 1)});
             setChatTimer();
           "
         >
@@ -67,15 +66,16 @@ export default {
 
       <ConnectInteractive />
 
-      <Screen :title="'Chatting'">
-        <p>Get to know your chat partner.</p>
-        <AltChat :instance="'first'"></AltChat>
-        <button @click="leaveChat(0.5, 'Informal Chat');">Leave Chat</button>
+      <Screen :title="'Free Chat'">
+        <p>In this chat, you can get to know your chat partner.<br />Press [continue experiment] if you are ready to start the experiment.</p>
+        <AltChat :instance="'0'"></AltChat>
+        <!-- TODO: set timer to reasonable value -->
+        <button @click="leaveChat(0.2, 'Informal Chat');">continue experiment</button>
       </Screen>
 
-      <Screen :title="'Your Opinion'">
+      <Screen :title="'Pre-Test Evaluation'">
         <template #0="{responses}">
-          <AltTable :content="trial.content[parseInt($magpie.socket.chain)]"></AltTable>
+          <AltTable :content="trial.content[$magpie.socket.chain % 6]"></AltTable>
           <p>How fair did Exampleton FC play during the last season?</p>
           <SliderInput
               left="Very Unfair"
@@ -87,7 +87,6 @@ export default {
               @click="
               $magpie.addResult({question: 'pre', answer:  responses.slider});
               $magpie.nextScreen();
-              setChatTimer();
           "
           >
             Continue
@@ -95,16 +94,31 @@ export default {
         </template>
       </Screen>
 
-      <Screen :title="'Discussion'">
-        <AltTable :content="trial.content[parseInt($magpie.socket.chain)]"></AltTable>
-        <p>{{ trial.conditions[ (parseInt($magpie.socket.variant) - 1)] }}</p>
-        <AltChat :instance="'second'"></AltChat>
-        <button @click="leaveChat(1, 'Trial Chat');">Leave Chat</button>
+      <Screen :title="'Discussion notice'">
+        <p>You will now enter the discussion part of our experiment. Please use full sentences to
+          make an argument and please stick to the discussion topic during the chat.
+        </p>
+        <button
+            @click="
+            $magpie.nextScreen();
+            setChatTimer();
+        "
+        >
+          Enter Discussion
+        </button>
       </Screen>
 
-      <Screen :title="'Your Opinion'">
+      <Screen :title="'Discussion'">
+        <AltTable :content="trial.content[$magpie.socket.chain % 6]"></AltTable>
+        <p>{{ trial.conditions[getCondition()] }}</p>
+        <AltChat :instance="'1'"></AltChat>
+        <!-- TODO: set timer to reasonable value -->
+        <button @click="leaveChat(0.3, 'Trial Chat');">Leave Chat</button>
+      </Screen>
+
+      <Screen :title="'Post-Test Evalution'">
         <template #0="{responses}">
-          <AltTable :content="trial.content[parseInt($magpie.socket.chain)]"></AltTable>
+          <AltTable :content="trial.content[$magpie.socket.chain % 6]"></AltTable>
           <p>How fair did Exampleton FC play during the last season?</p>
           <SliderInput
               left="Very Unfair"
@@ -169,9 +183,15 @@ export default {
               @click="
               $magpie.addResult({question: 'age', answer:  responses.age});
               $magpie.addResult({question: 'gender', answer:  responses.gender});
-              $magpie.addResult({question: 'education',answer: responses.education});
-              $magpie.addResult({question: 'languages',answer: responses.languages});
-              $magpie.addResult({question: 'comments',answer: responses.comments});
+              $magpie.addResult({question: 'education', answer: responses.education});
+              $magpie.addResult({question: 'languages', answer: responses.languages});
+              $magpie.addResult({question: 'comments', answer: responses.comments});
+              $magpie.addResult({question: 'experiment chain', answer: $magpie.socket.chain});
+              $magpie.addResult({question: 'participant variant', answer: $magpie.socket.variant});
+              $magpie.addResult({ question: 'condition', answer: trial.conditions[getCondition()]});
+              $magpie.addResult({question: 'trial head', answer: trial.content[$magpie.socket.chain % 6].head});
+              $magpie.addResult({question: 'trial data', answer: trial.content[$magpie.socket.chain % 6].data});
+              $magpie.addResult({question: 'fairplay score', answer: trial.content[$magpie.socket.chain % 6].score});
               $magpie.nextScreen();
             "
           >
@@ -201,12 +221,13 @@ import _ from 'lodash';
 
 import AltChat from '../src/components/AltChat.vue';
 import AltTable from '../src/components/AltTable.vue';
+import trials from '../trials/trials.csv';
 import Vue from "vue";
-
+console.log(trials);
 
 // get our own random generators
 
-const SEED = 23111995;
+const SEED = 464787977362;
 
 
 function RandomInt(seed) {
@@ -241,27 +262,41 @@ function generateData(head, rows, vmin, vmax) {
   return {head:head, data:data}
 }
 
-var INTROTABLE = generateData(["Name", "Fouls", "Red Cards", "Spit at people"], ["Exampleton FC", "VFL Osnabrück", "Hoffenham Hotspur"]);
-var HEADS = ["Name", "Fouls caused", "Red Cards", "Injuries caused", "Injuries suffered", "Referees attacked", "starred Nutella commercials", "People died during aftermatch parties"];
-var ROWS = ["Exampleton FC", "Grasshoppers Zürich", "FC Kafd", "RM Anova"];
-var CONTENT = [generateData(HEADS, ROWS),
-  generateData(HEADS, ROWS),
-  generateData(HEADS, ROWS),
-  generateData(HEADS, ROWS),
-  generateData(HEADS, ROWS),
-  generateData(HEADS, ROWS),
-  generateData(HEADS, ROWS),
-  generateData(HEADS, ROWS),
-  generateData(HEADS, ROWS),
-  generateData(HEADS, ROWS),
-  generateData(HEADS, ROWS),
-  generateData(HEADS, ROWS),
-  generateData(HEADS, ROWS),
-  generateData(HEADS, ROWS),
-  generateData(HEADS, ROWS),
-  generateData(HEADS, ROWS),
-  generateData(HEADS, ROWS),
-  generateData(HEADS, ROWS)];
+var INTROTABLE = generateData(["", "Injuries caused", "Red Cards", "Spit at people"], ["Exampleton FC", "Christels Palace FC", "Hoffenham Hotspur"], 0, 10);
+var HEADS = ["", "Injuries caused", "Hand play fouls", "Offside caused", "Tactical fouls", "Verbal Insults", "Arguments with referees"]
+var CONTENT = [ {head:HEADS, data: [    ["Exampleton FC", 8, 11,  6,  2, 3, 10],
+    ["Hoffenham Hotspur", 7, 10,  5, 13, 11,  9],
+    ["Red Bull Suessburg", 13,  8, 11, 11,  5,  8],
+    ["Hertha B.Sc.", 7, 13, 11, 13, 14, 13],
+    ["RM Anova", 10, 11, 12,  6,  5,  6]], score:"mostly fair"},
+  {head:HEADS, data: [       ["Exampleton FC", 3, 11,  9,  6,  4,  9],
+      ["Hoffenham Hotspur", 9, 12,  8, 14,  6, 11],
+      ["Red Bull Suessburg", 5, 10, 10,  9, 13, 7],
+      ["Hertha B.Sc.", 10,  5, 11, 14,  5, 12],
+      ["RM Anova", 7,  9, 10,  5, 11, 10]], score:"mostly fair"},
+  {head:HEADS, data: [       ["Exampleton FC", 10, 10,  7,  8,  7, 14],
+      ["Hoffenham Hotspur", 6,  6,  6, 11,  5, 14],
+      ["Red Bull Suessburg", 14, 13, 11,  9,  7, 12],
+      ["Hertha B.Sc.",  7,  6,  6, 12, 13,  8],
+      ["RM Anova", 10, 14,  5, 10, 12, 13]], score:"medium"},
+  {head:HEADS, data: [       ["Exampleton FC", 13, 12,  7, 13,  8,  6],
+      ["Hoffenham Hotspur", 12, 10,  7, 14,  9, 14],
+      ["Red Bull Suessburg", 12,  5,  6, 13,  6,  5],
+      ["Hertha B.Sc.",  6, 14,  6,  6,  9,  9],
+      ["RM Anova", 14,  9, 14,  7, 12, 10]], score:"medium"},
+  {head:HEADS, data: [       ["Exampleton FC", 18, 11,  8,  7, 10,  17],
+      ["Hoffenham Hotspur",12, 14,  6, 11, 11, 13],
+      ["Red Bull Suessburg", 5,  6, 10, 5, 11, 14],
+      ["Hertha B.Sc.",  7,  7, 11, 12, 10,  6],
+      ["RM Anova", 13,  6,  9,  9, 12, 11]], score:"mostly unfair"},
+  {head:HEADS, data: [       ["Exampleton FC", 6, 15,  8, 9, 16,  11],
+      ["Hoffenham Hotspur",11, 10, 13,  5,  8, 12],
+      ["Red Bull Suessburg", 13,  8,  10,  8,  9, 11],
+      ["Hertha B.Sc.",  5, 12, 13,  8,  5,  9],
+      ["RM Anova", 5, 10,  7,  9, 14, 11]], score:"mostly unfair"}];
+var CONDS = ["Convince your chat partner that Exampleton FC played unfair.",
+              "Convince your chat partner that Exampleton FC played fair."];
+
 
 console.log(CONTENT);
 
@@ -273,11 +308,11 @@ export default {
   },
   data() {
     const train = {content: INTROTABLE};
-    const trial = {
-      conditions:["Convince your chat partner that Exampleton FC played unfair.",
-        "Convince your chat partner that Exampleton FC played fair."],
-      content: CONTENT
-    };
+    //const trial = {
+    //  conditions: (new RandomInt(2311*this.socket.chain).nextFloat() < 0.5) ?  [CONDS[0], CONDS[1]] : [CONDS[1], CONDS[0]],
+    //  content: CONTENT
+    //};
+    const trial = {content: CONTENT, conditions: CONDS};
     return {
       train,
       trial,
@@ -289,9 +324,11 @@ export default {
       var container = [];
       for(var i=0; i<document.getElementById('chatbox_1').children.length; i++){
         var msg = document.getElementById('chatbox_1').children[i];
+        console.log(msg)
         var author = (msg.className === "message me") ?  "me" : "partner";
         var msg_text = msg.textContent;
-        container.push([author, msg_text]);
+        var time = msg.attributes.time.value;
+        container.push([ "\n" + author + "\t" + time + "\t" + msg_text + "\n"]);
       }
       this.$magpie.addResult({ question: result_name, answer: container});
       console.log(this.$magpie.socket);
@@ -310,6 +347,10 @@ export default {
     },
     setChatTimer() {
       this.chatTimer = new Date();
+    },
+    getCondition(){
+      var rand = Math.round(rng.nextFloat() + 1); // get an integer in [1, 2]
+      return ((rand === this.$magpie.socket.variant) ?  0 : 1);
     }
   }
 }

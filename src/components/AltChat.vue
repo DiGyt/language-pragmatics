@@ -7,8 +7,9 @@
           :key="i"
           :class="{
           message: true,
-          me: message.participantId === $magpie.socket.participantId
+          me: message.participantId === $magpie.socket.participantId,
         }"
+          v-bind:time="message.time"
           v-text="message.message"
       ></p>
     </div>
@@ -18,10 +19,10 @@
           ref="text"
           cols="50"
           placeholder="Type your message to the other participant here."
-          @keydown.enter="send"
+          @keydown.enter="send()"
       ></textarea>
       <button @click.stop="send()" @v>
-        Sendd
+        Send
       </button>
     </div>
   </div>
@@ -66,19 +67,22 @@ export default {
   },
   beforeDestroy() {
     clearInterval(this.update);
-    this.statusMonitor = {};
   },
   methods: {
     send() {
       const message = this.$refs.text.value;
-      if (!message) {
+      if (message.replace(/\n/g, '').length === 0) {
         return;
+      } else {
+        this.$magpie.socket.broadcast(EVENT_CHAT_MESSAGE, {
+          message,
+          participantId: this.$magpie.socket.participantId,
+          time: new Date(),
+          instance: this.instance
+        });
+
       }
-      this.$magpie.socket.broadcast(EVENT_CHAT_MESSAGE, {
-        message,
-        participantId: this.$magpie.socket.participantId,
-        instance: this.instance
-      });
+
       this.$refs.text.value = '';
       this.$refs.text.focus();
     },
@@ -91,7 +95,6 @@ export default {
           chain: this.$magpie.socket.chain,
           lastUpdated: new Date()
         });
-        console.log("INSTANCE: ", this.instance)
         // check if partner is active
         for (let [participantID, status] of Object.entries(this.statusMonitor)) {
           console.log(this.statusMonitor)
@@ -104,6 +107,8 @@ export default {
                 } else {
                   this.active = "Your chat partner is active";
                 }
+              } else if (status.status > this.instance) {
+                this.active = "Your chat partner has left the chat. Please click [leave chat] to continue with the experiment.";
               }
             }
           }
