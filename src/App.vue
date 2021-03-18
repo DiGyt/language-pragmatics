@@ -200,8 +200,8 @@ export default {
         </template>
       </Screen>
 
-      <DebugResults />
-      <!--  <SubmitResults /> -->
+      <!--  <DebugResults /> -->
+      <SubmitResults />
 
       <!-- While developing your experiment, using the DebugResults screen is fine,
       once you're going live, you can use the <SubmitResults> screen to automatically send your experimental data to the server. -->
@@ -221,9 +221,7 @@ import _ from 'lodash';
 
 import AltChat from '../src/components/AltChat.vue';
 import AltTable from '../src/components/AltTable.vue';
-import trials from '../trials/trials.csv';
 import Vue from "vue";
-console.log(trials);
 
 // get our own random generators
 
@@ -263,7 +261,9 @@ function generateData(head, rows, vmin, vmax) {
 }
 
 var INTROTABLE = generateData(["", "Injuries caused", "Red Cards", "Spit at people"], ["Exampleton FC", "Christels Palace FC", "Hoffenham Hotspur"], 0, 10);
-var HEADS = ["", "Injuries caused", "Hand play fouls", "Offside caused", "Tactical fouls", "Verbal Insults", "Arguments with referees"]
+var HEADS = ["", "Injuries caused", "Hand play fouls", "Offside caused", "Tactical fouls", "Verbal Insults", "Arguments with referees"];
+var CONDS = ["Convince your chat partner that Exampleton FC played unfair.",
+  "Convince your chat partner that Exampleton FC played fair."];
 var CONTENT = [ {head:HEADS, data: [    ["Exampleton FC", 8, 11,  6,  2, 3, 10],
     ["Hoffenham Hotspur", 7, 10,  5, 13, 11,  9],
     ["Red Bull Suessburg", 13,  8, 11, 11,  5,  8],
@@ -294,8 +294,6 @@ var CONTENT = [ {head:HEADS, data: [    ["Exampleton FC", 8, 11,  6,  2, 3, 10],
       ["Red Bull Suessburg", 13,  8,  10,  8,  9, 11],
       ["Hertha B.Sc.",  5, 12, 13,  8,  5,  9],
       ["RM Anova", 5, 10,  7,  9, 14, 11]], score:"mostly unfair"}];
-var CONDS = ["Convince your chat partner that Exampleton FC played unfair.",
-              "Convince your chat partner that Exampleton FC played fair."];
 
 
 console.log(CONTENT);
@@ -308,10 +306,6 @@ export default {
   },
   data() {
     const train = {content: INTROTABLE};
-    //const trial = {
-    //  conditions: (new RandomInt(2311*this.socket.chain).nextFloat() < 0.5) ?  [CONDS[0], CONDS[1]] : [CONDS[1], CONDS[0]],
-    //  content: CONTENT
-    //};
     const trial = {content: CONTENT, conditions: CONDS};
     return {
       train,
