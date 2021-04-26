@@ -6,7 +6,10 @@
       </th>
     </tr>
     <tr v-for="roww in content.data">
-      <td v-for="cell in roww">
+      <td v-if="roww[0] === 'Exampleton FC'" v-for="cell in roww" style="color:#ff0000;font-weight: bold;">
+        {{ cell }}
+      </td>
+      <td v-if="roww[0] != 'Exampleton FC'" v-for="cell in roww">
         {{ cell }}
       </td>
     </tr>
