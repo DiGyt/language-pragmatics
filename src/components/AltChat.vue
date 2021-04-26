@@ -102,7 +102,7 @@ export default {
             if (participantID != this.$magpie.socket.participantId) {
               if (status.status === this.instance) {
                 // TODO: maybe set the partner timeout to 30 seconds? 10 look good though...
-                if ((new Date() - new Date(status.lastUpdated)) > 10 * 1000) {
+                if ((new Date() - new Date(status.lastUpdated)) > 3 * 1000) {
                   this.active = "Your chat partner has left the chat. Please click [leave chat] to continue with the experiment.";
                 } else {
                   this.active = "Your chat partner is active";
