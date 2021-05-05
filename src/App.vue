@@ -76,7 +76,7 @@ export default {
       <Screen :title="'Pre-Test Evaluation'">
         <template #0="{responses}">
           <AltTable :content="trial.content[$magpie.socket.chain % 6]"></AltTable>
-          <p>How fair did Exampleton FC play during the last season?</p>
+          <p>How fair do you think Exampleton FC played during the last season?</p>
           <SliderInput
               left="Very Unfair"
               right="Very Fair"
@@ -85,7 +85,7 @@ export default {
           />
           <button
               @click="
-              $magpie.addResult({question: 'pre', answer:  responses.slider});
+              $magpie.addResult({question: 'How fair do you think Exampleton FC played during the last season?', answer:  responses.slider});
               $magpie.nextScreen();
           "
           >
@@ -119,14 +119,14 @@ export default {
       <Screen :title="'Post-Test Evalution'">
         <template #0="{responses}">
           <AltTable :content="trial.content[$magpie.socket.chain % 6]"></AltTable>
-          <p>How fair did Exampleton FC play during the last season?</p>
+          <p>Given the arguments of your chat partner, how fair do you think Exampleton FC played during the last season?</p>
           <SliderInput
               left="Very Unfair"
               right="Very Fair"
               initial="50"
               :response.sync="responses.slider"
           />
-          <button @click="$magpie.addResult({question: 'post', answer:  responses.slider}); $magpie.nextScreen();">Continue</button>
+          <button @click="$magpie.addResult({question: 'Given the arguments of your chat partner, how fair do you think Exampleton FC played during the last season?', answer:  responses.slider}); $magpie.nextScreen();">Continue</button>
         </template>
       </Screen>
 
