@@ -30,13 +30,24 @@ export default {
       // If row data can be numbers, it's sorted numerically, else alphabetically
       // based on https://www.w3schools.com/howto/howto_js_sort_table.asp
 
-      var table, rows, switching, i, x, y, shouldSwitch, dir, switchcount = 0;
+           var table, rows, switching, i, x, y, shouldSwitch, dir, switchcount = 0;
       table = document.getElementById("myTable");
       switching = true;
       //Set the sorting direction to ascending:
       dir = "asc";
       /*Make a loop that will continue until
       no switching has been done:*/
+
+      // remove old indicators
+      var cols = table.rows[0].cells;
+      var lastchar = "";
+      for (i = 0; i < (cols.length); i++) {
+        lastchar = cols[i].textContent[cols[i].textContent.length - 1];
+        if ((lastchar === "\u25B2") || (lastchar === "\u25BC")) {
+          cols[i].textContent = cols[i].textContent.substring(0, cols[i].textContent.length - 1);
+        }
+      }
+
       while (switching) {
         //start by saying: no switching is done:
         switching = false;
@@ -85,6 +96,15 @@ export default {
           }
         }
       }
+      var indicator = "";
+      // decide whether to use up or down indicator
+      if (dir == "asc"){
+        indicator = "\u25BC";
+      } else {
+        indicator = "\u25B2";
+      }
+      // set the indicatora
+      rows[0].cells[n].textContent = rows[0].cells[n].textContent + indicator;
     }
   }
 
