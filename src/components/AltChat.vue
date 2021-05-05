@@ -13,15 +13,18 @@
           v-text="message.message"
       ></p>
     </div>
-    <div id="noticebox_1" class="notice-box">{{active}}</div>
-    <div class="chat-input">
+    <div v-if="active === 'Your chat partner has not yet entered the chat.'" id="noticebox_1" class="notice-box" style="background-color:#ff9c00">{{active}}</div>
+    <div v-if="active === 'Your chat partner is active.'"  id="noticebox_1" class="notice-box" style="background-color:forestgreen">{{active}}</div>
+    <!--console.log(active === "Your chat partner has left the chat. Please click [leave chat] to continue with the experiment.");-->
+    <div v-if="active === 'Your chat partner has left the chat. Please click [leave chat] to continue with the experiment.'" id="noticebox_1" class="notice-box" style="background-color:#DA291C">{{active}}</div>
+  <div class="chat-input">
       <textarea
           ref="text"
           cols="50"
           placeholder="Type your message to the other participant here."
           @keydown.enter="send()"
       ></textarea>
-      <button @click.stop="send()" @v>
+      <button @click.stop="send()">
         Send
       </button>
     </div>
@@ -104,11 +107,14 @@ export default {
                 // TODO: maybe set the partner timeout to 30 seconds? 10 look good though...
                 if ((new Date() - new Date(status.lastUpdated)) > 3 * 1000) {
                   this.active = "Your chat partner has left the chat. Please click [leave chat] to continue with the experiment.";
+                  this.active_color = "red";
                 } else {
-                  this.active = "Your chat partner is active";
+                  this.active = "Your chat partner is active.";
+                  this.active_color = "green";
                 }
               } else if (status.status > this.instance) {
                 this.active = "Your chat partner has left the chat. Please click [leave chat] to continue with the experiment.";
+                this.active_color = "red";
               }
             }
           }
